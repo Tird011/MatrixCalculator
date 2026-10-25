@@ -93,6 +93,30 @@ int main() {
     CHECK(throws([&] { determinant(make(2, 3, {1, 2, 3, 4, 5, 6})); }));
     CHECK(throws([&] { inverse(make(2, 2, {1, 2, 2, 4})); }));  // singular
 
+    // Every operation explains itself: kind, why, worked numbers, and a printable description.
+    const Result kinds[] = {add(a, b), subtract(a, b), transpose(a, 'B'), multiply(a, b, Schedule::AllCores),
+                            determinant(a), inverse(a)};
+    const Kind expected[] = {Kind::Add, Kind::Subtract, Kind::Transpose, Kind::Multiply, Kind::Determinant,
+                             Kind::Inverse};
+    for (int i = 0; i < 6; ++i) {
+        CHECK(kinds[i].kind == expected[i]);
+        CHECK(!kinds[i].why.empty() && !kinds[i].how.empty());
+        const std::string text = describe(kinds[i]);
+        CHECK(text.find("# WHY") != std::string::npos && text.find("# HOW") != std::string::npos);
+    }
+    CHECK(transpose(a, 'B').title == "transpose(B)" && determinant(a, 'B').title == "det(B)");
+
+    // The worked line for C[1][1] shows the real numbers and the thread that computed the row.
+    CHECK(multiply(a, b, Schedule::OneTaskPerRow).how[0].find("1*5 + 2*7 = 19   [thread 0]") != std::string::npos);
+    CHECK(multiply(a, b, Schedule::OneTaskPerRow).how[2].find("[thread 1]") != std::string::npos);
+    CHECK(add(a, make(2, 2, {-1, 0, 0, 0})).how[0] == "C[1][1] = 1 + (-1) = 0");
+
+    // Comparison: both timings are measured and positive; threads were really used for the parallel run.
+    const Comparison cmp = compareMultiply(big1, big2, Schedule::AllCores);
+    CHECK(cmp.seqMs > 0 && cmp.parMs > 0 && cmp.reps >= 1);
+    CHECK(describe([&] { Result m = multiply(a, b, Schedule::OneTaskPerRow); m.comparison = cmp; return m; }())
+              .find("# COMPARISON") != std::string::npos);
+
     if (failures == 0) std::cout << "all tests passed\n";
     return failures == 0 ? 0 : 1;
 }
