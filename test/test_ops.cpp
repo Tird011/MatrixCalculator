@@ -3,6 +3,7 @@
 #include <initializer_list>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 
 #include "calculations/ops.h"
 #include "vectors/task_runner.h"

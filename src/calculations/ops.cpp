@@ -225,7 +225,7 @@ Result determinant(const Matrix& a, char name) {
         r.how.push_back("a*d - b*c = " + par(a(0, 0)) + "*" + par(a(1, 1)) + " - " + par(a(0, 1)) + "*" +
                         par(a(1, 0)) + " = " + num(a(0, 0) * a(1, 1) - a(0, 1) * a(1, 0)));
     } else if (n == 3) {
-        auto minor = [&](std::size_t r1, std::size_t c1, std::size_t r2, std::size_t c2, std::size_t r3,
+        auto crossTerm = [&](std::size_t r1, std::size_t c1, std::size_t r2, std::size_t c2, std::size_t r3,
                          std::size_t c3, std::size_t r4, std::size_t c4) {
             return "(" + par(a(r1, c1)) + "*" + par(a(r2, c2)) + " - " + par(a(r3, c3)) + "*" + par(a(r4, c4)) + ")";
         };
@@ -233,8 +233,8 @@ Result determinant(const Matrix& a, char name) {
                            a(0, 1) * (a(1, 0) * a(2, 2) - a(1, 2) * a(2, 0)) +
                            a(0, 2) * (a(1, 0) * a(2, 1) - a(1, 1) * a(2, 0));
         r.how.push_back("expand along row 1: a(ei - fh) - b(di - fg) + c(dh - eg)");
-        r.how.push_back("= " + par(a(0, 0)) + "*" + minor(1, 1, 2, 2, 1, 2, 2, 1) + " - " + par(a(0, 1)) + "*" +
-                        minor(1, 0, 2, 2, 1, 2, 2, 0) + " + " + par(a(0, 2)) + "*" + minor(1, 0, 2, 1, 1, 1, 2, 0));
+        r.how.push_back("= " + par(a(0, 0)) + "*" + crossTerm(1, 1, 2, 2, 1, 2, 2, 1) + " - " + par(a(0, 1)) + "*" +
+                        crossTerm(1, 0, 2, 2, 1, 2, 2, 0) + " + " + par(a(0, 2)) + "*" + crossTerm(1, 0, 2, 1, 1, 1, 2, 0));
         r.how.push_back("= " + num(cof));
     }
 
